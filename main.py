@@ -6,16 +6,21 @@ from PyQt5.QtGui import QFont as QF
 import pandas as pd
 from openpyxl import load_workbook
 
-
+#Funcion para elimnar las columnas no necesaria, para cambiar de nombres las columnas y para hacer
+#los respectivos calculos
 def informe_sensibilizacion(namefile, nuevo_nombre):
     file_name = namefile
-    df = pd.read_excel(file_name)  # , sheet_name= my_sheet)
+    df = pd.read_excel(file_name)  #Leemos el archivo de excel, como dataframe
+
+    #Elimanar columnas y reemplazar - por cero
     valor = df.drop("Nombre de usuario", axis=1)
     valor = valor.drop("Institución", axis=1)
     valor = valor.drop("Departamento", axis=1)
     valor = valor.drop("Dirección de correo", axis=1)
     valor = valor.drop("Última descarga de este curso", axis=1)
     valor = valor.replace({"-": 0})
+
+    #Identificar quien participo en cada actividad
 
     Actividad1 = valor['Tarea:Actividad 1. Revisar y ajustar el perfil (Real)']
     Actividad1[Actividad1 > 1] = 1
@@ -51,6 +56,7 @@ def informe_sensibilizacion(namefile, nuevo_nombre):
 
     Reporte = Reporte.value_counts()
 
+    #Cambio de nombre a todas las columnas
     valor = valor.rename(columns={'Tarea:Actividad 1. Revisar y ajustar el perfil (Real)': 'Actividad 1',
                                   'Foro:Rating grade for Actividad 2. Foro de presentación (Real)': 'Actividad2',
                                   'Cuestionario:Actividad 3. Tutoría virtual con Ude@ (Real)': 'Actividad3',
@@ -59,6 +65,7 @@ def informe_sensibilizacion(namefile, nuevo_nombre):
                                   'Cuestionario:Actividad 6. Evaluación final (Real)': 'Actividad6',
                                   'Total del curso (Real)': 'Estado'})
 
+    #Guardar el archivo nuevo
     file = nuevo_nombre
     valor.to_excel(file, sheet_name='Informe')
 
@@ -67,6 +74,7 @@ def informe_sensibilizacion(namefile, nuevo_nombre):
     writer.book = book
     writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
 
+    #Escribir hoja2
     total = valor.shape[0]
     actividad_data_frame = {
         'Actividad': ['Actividad1', 'Actividad2', ' Actividad3', 'Actividad4', 'Actividad5', 'Actividad6'],
@@ -76,6 +84,7 @@ def informe_sensibilizacion(namefile, nuevo_nombre):
     df1 = pd.DataFrame(actividad_data_frame)
     df1.to_excel(writer, "Hoja 2")
 
+    #Escribir hoja3
     aprobado_data = {'Aprobado': ['No aprobado', 'Participación'], str(total - Reporte[0]): [Reporte[0], participacion]}
 
     df2 = pd.DataFrame(aprobado_data)
@@ -83,6 +92,7 @@ def informe_sensibilizacion(namefile, nuevo_nombre):
     writer.save()
 
 
+#Funcion similar a la de sensibilización, solo cambia que tiene menos tareas
 def informe_fpd(namefile, new_name):
     file_name = namefile
     df = pd.read_excel(file_name)  # , sheet_name= my_sheet)
@@ -150,7 +160,7 @@ def informe_fpd(namefile, new_name):
     df2.to_excel(writer, "hoja 3")
     writer.save()
 
-
+#Clase para hacer la interfaz de usuario
 class Ui_MainWindow(QMainWindow):
     ruta = ""
 
